@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { LeaderboardEntry } from '@/types';
 import { TrophyIcon } from '@heroicons/react/24/solid';
 
 export default function Leaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState('Connecting...');
 
   useEffect(() => {
+    // Test Firebase connection
+    console.log('Testing Firebase connection...');
+    
     // Query the top 10 entries by idle time
     const q = query(
       collection(db, 'leaderboard'),
@@ -24,8 +28,11 @@ export default function Leaderboard() {
       // Sort by idle time in descending order
       newEntries.sort((a, b) => b.idleTime - a.idleTime);
       setEntries(newEntries);
+      setConnectionStatus('Connected');
+      console.log('Firebase connection successful!');
     }, (error) => {
       console.error("Error fetching leaderboard:", error);
+      setConnectionStatus('Connection Error');
     });
 
     return () => unsubscribe();
@@ -36,6 +43,7 @@ export default function Leaderboard() {
       <div className="flex items-center gap-2 mb-4">
         <TrophyIcon className="w-6 h-6 text-yellow-400" />
         <h2 className="text-xl font-bold">Top Chillers</h2>
+        <span className="text-xs text-gray-300">({connectionStatus})</span>
       </div>
       <div className="space-y-2">
         {entries.map((entry, index) => (

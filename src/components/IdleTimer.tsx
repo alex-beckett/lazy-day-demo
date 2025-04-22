@@ -75,7 +75,6 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0 }
             idleTime: newTime,
             currentTitle: prev.currentTitle,
             achievements: prev.achievements,
-            lastSnapshotTime: now,
             lastEventTime: now,
             bonusMultiplier: 1,
           });

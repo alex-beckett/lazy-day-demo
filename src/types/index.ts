@@ -24,4 +24,5 @@ export interface GameState {
   achievements: Achievement[];
   lastEventTime: number;
   bonusMultiplier: number;
+  lastSnapshotTime?: number; // Optional timestamp for the last snapshot
 } 
