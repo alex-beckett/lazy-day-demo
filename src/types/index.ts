@@ -3,6 +3,7 @@ export interface LeaderboardEntry {
   idleTime: number;
   title: string;
   timestamp: number;
+  playerName: string;
 }
 
 export interface Achievement {

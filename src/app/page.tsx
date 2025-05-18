@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { setDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import IdleTimer from '@/components/IdleTimer';
+import IdleTimer, { ACHIEVEMENTS } from '@/components/IdleTimer';
 import Leaderboard from '@/components/Leaderboard';
 import AmbientEvent from '@/components/AmbientEvent';
 import { GameState, Achievement } from '@/types';
@@ -20,24 +20,48 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string>('');
   const [showOverlay, setShowOverlay] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
+  const [playerName, setPlayerName] = useState('Anonymous Relaxer');
+  const [isMobile, setIsMobile] = useState(false);
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    // Check if device is mobile
+    const checkMobile = () => {
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (window.innerWidth <= 768);
+      setIsMobile(mobile);
+    };
+
+    // Check initially
+    checkMobile();
+
+    // Recheck on resize
+    window.addEventListener('resize', checkMobile);
+
+    // Set up session and audio
     setSessionId(`session_${Date.now()}`);
-    // Initialize audio but don't play yet
     bgMusicRef.current = new Audio('/images/bensound-thesunday.mp3');
     bgMusicRef.current.loop = true;
     bgMusicRef.current.volume = 0.3;
+
+    // Try to load saved name from localStorage
+    const savedName = localStorage.getItem('playerName');
+    if (savedName && savedName !== 'Novice Napper') {
+      setPlayerName(savedName);
+    }
 
     return () => {
       if (bgMusicRef.current) {
         bgMusicRef.current.pause();
         bgMusicRef.current.src = '';
       }
+      window.removeEventListener('resize', checkMobile);
     };
   }, []);
 
   const startGame = () => {
+    if (isMobile) return; // Prevent game start on mobile
+
     if (bgMusicRef.current) {
       bgMusicRef.current.play().catch(error => {
         console.error('Error playing background music:', error);
@@ -45,6 +69,31 @@ export default function Home() {
     }
     setShowOverlay(false);
     setGameStarted(true);
+  };
+
+  const handleNameChange = (newName: string) => {
+    // Don't save achievement titles as custom names
+    if (!ACHIEVEMENTS.some(achievement => achievement.title === newName) && newName !== 'Novice Napper') {
+      setPlayerName(newName);
+      localStorage.setItem('playerName', newName);
+    } else {
+      setPlayerName('Anonymous Relaxer');
+      localStorage.removeItem('playerName');
+    }
+    
+    // Update Firebase if we have an active session
+    if (sessionId && gameStarted) {
+      try {
+        setDoc(doc(db, 'leaderboard', sessionId), {
+          idleTime: gameState.idleTime,
+          title: gameState.currentTitle,
+          timestamp: Date.now(),
+          playerName: newName,
+        });
+      } catch (error) {
+        console.error('Error updating player name:', error);
+      }
+    }
   };
 
   const handleIdle = async (newState: GameState) => {
@@ -63,6 +112,7 @@ export default function Home() {
           idleTime: newState.idleTime,
           title: newState.currentTitle,
           timestamp: Date.now(),
+          playerName: playerName,
         });
       } catch (error) {
         console.error('Error updating leaderboard:', error);
@@ -95,6 +145,7 @@ export default function Home() {
           idleTime: newIdleTime,
           title: gameState.currentTitle,
           timestamp: Date.now(),
+          playerName: playerName,
         });
       } catch (error) {
         console.error('Error updating leaderboard:', error);
@@ -120,29 +171,47 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/10" />
       </div>
 
-      {/* Game content - always rendered but controlled by gameStarted */}
-      <div className="relative z-10">
-        <IdleTimer 
-          onIdle={handleIdle} 
-          onAchievement={handleAchievement}
-          initialIdleTime={gameState.idleTime}
-        />
-        <Leaderboard />
-        <AmbientEvent onCatch={handleEventCatch} />
+      {/* Game content - only render if not mobile */}
+      {!isMobile && gameStarted && (
+        <div className="relative z-10">
+          <IdleTimer 
+            onIdle={handleIdle} 
+            onAchievement={handleAchievement}
+            initialIdleTime={gameState.idleTime}
+            playerName={playerName}
+            onNameChange={handleNameChange}
+          />
+          <Leaderboard />
+          <AmbientEvent onCatch={handleEventCatch} />
 
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
-          Pro tip: Just relax and do nothing. You're doing great! 🌴
+          {/* Pro tip footer */}
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
+            <p className="text-white/90 text-sm font-light flex items-center gap-2">
+              Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Click to start overlay */}
       {showOverlay && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center cursor-pointer"
+          className={`fixed inset-0 z-50 bg-black/80 flex items-center justify-center ${!isMobile ? 'cursor-pointer' : ''}`}
           onClick={startGame}
         >
-          <div className="text-white text-2xl text-center">
-            <p>Click anywhere to start</p>
+          <div className="text-white text-center">
+            <p className="text-2xl">
+              {isMobile ? (
+                "Switch to desktop to play!"
+              ) : (
+                "Click anywhere to start"
+              )}
+            </p>
+            {isMobile && (
+              <p className="mt-2 text-white/60">
+                This game is designed for desktop use only
+              </p>
+            )}
           </div>
         </div>
       )}
