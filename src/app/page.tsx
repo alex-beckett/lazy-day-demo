@@ -10,6 +10,24 @@ import MobileChillTimer from '@/components/MobileChillTimer';
 import { GameState, Achievement } from '@/types';
 import { isMobileDevice, initializeMobileSession, hasGameStarted } from '@/utils/mobile';
 
+function ProTipFooter({ isMobile, showOverlay }: { isMobile: boolean; showOverlay: boolean }) {
+  return (
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
+      <p className={`text-white/90 text-sm font-light flex ${isMobile ? 'flex-col' : 'items-center'} gap-2`}>
+        {isMobile && showOverlay ? (
+          <>
+            The lazier way to play: Just close this page and come back later to claim your chill time! <span className="text-lg">🌴</span>
+          </>
+        ) : (
+          <>
+            Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
+
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>({
     idleTime: 0,
@@ -208,20 +226,7 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Pro tip footer */}
-              <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
-                <p className="text-white/90 text-sm font-light flex flex-col items-center gap-2">
-                  {showOverlay ? (
-                    <>
-                      The lazier way to play: Just close this page and come back later to claim your chill time! <span className="text-lg">🌴</span>
-                    </>
-                  ) : (
-                    <>
-                      Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
-                    </>
-                  )}
-                </p>
-              </div>
+              <ProTipFooter isMobile={true} showOverlay={showOverlay} />
             </>
           ) : (
             <>
@@ -235,12 +240,7 @@ export default function Home() {
               <Leaderboard />
               <AmbientEvent onCatch={handleEventCatch} />
 
-              {/* Pro tip footer */}
-              <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
-                <p className="text-white/90 text-sm font-light flex items-center gap-2">
-                  Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
-                </p>
-              </div>
+              <ProTipFooter isMobile={false} showOverlay={showOverlay} />
             </>
           )}
         </div>
