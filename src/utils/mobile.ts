@@ -1,5 +1,14 @@
 import { Achievement } from '@/types';
 
+export function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  return (
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    window.innerWidth < 768
+  );
+}
+
 interface StorageData {
   checkInTimestamp: number;
   totalChillTime: number;
@@ -9,6 +18,14 @@ interface StorageData {
 const STORAGE_KEY = 'lazy_day_mobile_session';
 
 function getStorageData(): StorageData {
+  if (typeof window === 'undefined') {
+    return {
+      checkInTimestamp: Date.now(),
+      totalChillTime: 0,
+      hasStarted: false
+    };
+  }
+
   const defaultData: StorageData = {
     checkInTimestamp: Date.now(),
     totalChillTime: 0,
@@ -26,6 +43,8 @@ function getStorageData(): StorageData {
 }
 
 export function startChilling(): void {
+  if (typeof window === 'undefined') return;
+
   const data = getStorageData();
   const newData: StorageData = {
     ...data,
@@ -63,6 +82,14 @@ export function claimChillTime(): {
   claimed: number;
   formatted: string;
 } {
+  if (typeof window === 'undefined') {
+    return {
+      newTotal: 0,
+      claimed: 0,
+      formatted: '0m'
+    };
+  }
+
   const data = getStorageData();
   const elapsed = getElapsedTime();
   
@@ -98,8 +125,4 @@ function formatDuration(seconds: number): { seconds: number; formatted: string }
     seconds,
     formatted
   };
-}
-
-export function isMobileDevice(): boolean {
-  return window.innerWidth <= 768;
 } 
