@@ -42,9 +42,6 @@ export default function MobileChillTimer({ onClaim }: MobileChillTimerProps) {
           <h1 className="text-3xl font-medium mb-2">
             Welcome to Lazy Day
           </h1>
-          <p className="text-xl text-white/80">
-            Close the app and come back later to start accumulating chill time
-          </p>
         </div>
       </div>
     );

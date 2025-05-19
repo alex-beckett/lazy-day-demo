@@ -200,14 +200,22 @@ export default function Home() {
                   <MobileChillTimer onClaim={handleMobileClaim} />
                 </div>
                 <div className="w-full max-w-sm">
-                  <Leaderboard />
+                  <Leaderboard isMobile />
                 </div>
               </div>
               
               {/* Pro tip footer */}
               <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
-                <p className="text-white/90 text-sm font-light flex items-center gap-2">
-                  Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
+                <p className="text-white/90 text-sm font-light flex flex-col items-center gap-2">
+                  {!gameStarted ? (
+                    <>
+                      Close the app and come back later to start accumulating chill time <span className="text-lg">🌴</span>
+                    </>
+                  ) : (
+                    <>
+                      Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
+                    </>
+                  )}
                 </p>
               </div>
             </>
