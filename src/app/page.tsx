@@ -12,8 +12,8 @@ import { isMobileDevice, initializeMobileSession, hasGameStarted } from '@/utils
 
 function ProTipFooter({ isMobile, showOverlay }: { isMobile: boolean; showOverlay: boolean }) {
   return (
-    <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] ${isMobile ? 'px-4 py-2.5 max-w-[90%]' : 'px-5 py-3.5'} shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40`}>
-      <p className={`text-white/90 text-sm font-light flex ${isMobile ? 'flex-col' : 'items-center'} gap-2`}>
+    <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] ${isMobile ? 'px-4 py-2 max-w-[95%]' : 'px-5 py-3.5'} shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40`}>
+      <p className={`text-white/90 text-sm font-light flex ${isMobile ? 'flex-col' : 'items-center'} gap-1.5`}>
         {isMobile ? (
           'Close the app and come back later to accumulate time'
         ) : (
