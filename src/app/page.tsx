@@ -6,7 +6,9 @@ import { db } from '@/lib/firebase';
 import IdleTimer, { ACHIEVEMENTS } from '@/components/IdleTimer';
 import Leaderboard from '@/components/Leaderboard';
 import AmbientEvent from '@/components/AmbientEvent';
+import MobileChillTimer from '@/components/MobileChillTimer';
 import { GameState, Achievement } from '@/types';
+import { isMobileDevice, initializeMobileSession } from '@/utils/mobile';
 
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>({
@@ -27,9 +29,11 @@ export default function Home() {
   useEffect(() => {
     // Check if device is mobile
     const checkMobile = () => {
-      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        (window.innerWidth <= 768);
+      const mobile = isMobileDevice();
       setIsMobile(mobile);
+      if (mobile) {
+        initializeMobileSession();
+      }
     };
 
     // Check initially
@@ -60,8 +64,6 @@ export default function Home() {
   }, []);
 
   const startGame = () => {
-    if (isMobile) return; // Prevent game start on mobile
-
     if (bgMusicRef.current) {
       bgMusicRef.current.play().catch(error => {
         console.error('Error playing background music:', error);
@@ -82,7 +84,7 @@ export default function Home() {
     }
     
     // Update Firebase if we have an active session
-    if (sessionId && gameStarted) {
+    if (sessionId) {
       try {
         setDoc(doc(db, 'leaderboard', sessionId), {
           idleTime: gameState.idleTime,
@@ -153,6 +155,20 @@ export default function Home() {
     }
   };
 
+  const handleMobileClaim = async (totalSeconds: number) => {
+    // Update game state and leaderboard with claimed time
+    const newState = {
+      idleTime: totalSeconds,
+      currentTitle: gameState.currentTitle,
+      achievements: gameState.achievements,
+      lastEventTime: Date.now(),
+      bonusMultiplier: 1,
+    };
+    
+    setGameState(newState);
+    handleIdle(newState);
+  };
+
   return (
     <main className="min-h-screen relative overflow-hidden">
       {/* Background video */}
@@ -171,47 +187,56 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/10" />
       </div>
 
-      {/* Game content - only render if not mobile */}
-      {!isMobile && gameStarted && (
+      {/* Game content */}
+      {!showOverlay && (
         <div className="relative z-10">
-          <IdleTimer 
-            onIdle={handleIdle} 
-            onAchievement={handleAchievement}
-            initialIdleTime={gameState.idleTime}
-            playerName={playerName}
-            onNameChange={handleNameChange}
-          />
-          <Leaderboard />
-          <AmbientEvent onCatch={handleEventCatch} />
+          {isMobile ? (
+            <>
+              <MobileChillTimer onClaim={handleMobileClaim} />
+              <Leaderboard />
+            </>
+          ) : (
+            <>
+              <IdleTimer 
+                onIdle={handleIdle} 
+                onAchievement={handleAchievement}
+                initialIdleTime={gameState.idleTime}
+                playerName={playerName}
+                onNameChange={handleNameChange}
+              />
+              <Leaderboard />
+              <AmbientEvent onCatch={handleEventCatch} />
 
-          {/* Pro tip footer */}
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
-            <p className="text-white/90 text-sm font-light flex items-center gap-2">
-              Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
-            </p>
-          </div>
+              {/* Pro tip footer */}
+              <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
+                <p className="text-white/90 text-sm font-light flex items-center gap-2">
+                  Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
+                </p>
+              </div>
+            </>
+          )}
         </div>
       )}
 
       {/* Click to start overlay */}
       {showOverlay && (
         <div 
-          className={`fixed inset-0 z-50 bg-black/80 flex items-center justify-center ${!isMobile ? 'cursor-pointer' : ''}`}
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center cursor-pointer"
           onClick={startGame}
         >
           <div className="text-white text-center">
-            <p className="text-2xl">
+            <p className="text-2xl mb-4">
               {isMobile ? (
-                "Switch to desktop to play!"
+                "Close the app to start chilling"
               ) : (
                 "Click anywhere to start"
               )}
             </p>
-            {isMobile && (
-              <p className="mt-2 text-white/60">
-                This game is designed for desktop use only
+            {isMobile ? (
+              <p className="text-lg text-white/60 max-w-xs mx-auto">
+                The lazier way to play: Just close this page and come back later to claim your chill time!
               </p>
-            )}
+            ) : null}
           </div>
         </div>
       )}

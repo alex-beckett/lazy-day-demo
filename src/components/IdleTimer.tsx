@@ -31,6 +31,27 @@ interface IdleTimerProps {
   playerName: string;
 }
 
+export function checkAchievements(time: number, currentAchievements: Achievement[] = []): {
+  newAchievements: Achievement[];
+  highestTitle: string;
+} {
+  const newAchievements = ACHIEVEMENTS.filter(
+    achievement => time >= achievement.threshold && 
+    !currentAchievements.find(a => a.title === achievement.title)
+  );
+
+  // Get the highest title based on time
+  const eligibleAchievements = ACHIEVEMENTS.filter(a => time >= a.threshold);
+  const highestTitle = eligibleAchievements.length > 0 
+    ? eligibleAchievements[eligibleAchievements.length - 1].title
+    : 'Novice Napper';
+
+  return {
+    newAchievements,
+    highestTitle
+  };
+}
+
 export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, onNameChange, playerName }: IdleTimerProps) {
   const [state, setState] = useState({
     idleTime: initialIdleTime,
@@ -39,31 +60,22 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
     lastActivity: Date.now()
   });
 
-  // Update state when initialIdleTime changes (from caught events)
+  // Update state when initialIdleTime changes (from caught events or mobile claims)
   useEffect(() => {
-    setState(prev => ({
-      ...prev,
-      idleTime: initialIdleTime
-    }));
-  }, [initialIdleTime]);
-
-  // Memoize the achievement check to prevent unnecessary re-renders
-  const checkAchievements = useCallback((time: number) => {
-    const newAchievements = ACHIEVEMENTS.filter(
-      achievement => time >= achievement.threshold && 
-      !state.achievements.find(a => a.title === achievement.title)
-    );
-
-    if (newAchievements.length > 0) {
-      const latestAchievement = newAchievements[newAchievements.length - 1];
+    if (initialIdleTime !== state.idleTime) {
+      const { newAchievements, highestTitle } = checkAchievements(initialIdleTime, state.achievements);
+      
       setState(prev => ({
         ...prev,
-        currentTitle: latestAchievement.title,
+        idleTime: initialIdleTime,
+        currentTitle: highestTitle,
         achievements: [...prev.achievements, ...newAchievements]
       }));
+
+      // Trigger achievement notifications
       newAchievements.forEach(achievement => onAchievement(achievement));
     }
-  }, [onAchievement, state.achievements]);
+  }, [initialIdleTime, onAchievement, state.achievements, state.idleTime]);
 
   // Handle activity detection
   const handleActivity = useCallback(() => {
@@ -83,22 +95,25 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
         // Only increment if we've been idle
         if (timeSinceActivity >= 1000) {
           const newTime = prev.idleTime + 1;
-          
-          // Check achievements after updating time
-          checkAchievements(newTime);
+          const { newAchievements, highestTitle } = checkAchievements(newTime, prev.achievements);
           
           // Notify parent
           onIdle({
             idleTime: newTime,
-            currentTitle: prev.currentTitle,
-            achievements: prev.achievements,
+            currentTitle: highestTitle,
+            achievements: [...prev.achievements, ...newAchievements],
             lastEventTime: now,
             bonusMultiplier: 1,
           });
           
+          // Trigger achievement notifications
+          newAchievements.forEach(achievement => onAchievement(achievement));
+          
           return {
             ...prev,
-            idleTime: newTime
+            idleTime: newTime,
+            currentTitle: highestTitle,
+            achievements: [...prev.achievements, ...newAchievements]
           };
         }
         return prev;
@@ -113,7 +128,7 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
       clearInterval(timer);
       events.forEach(event => window.removeEventListener(event, handleActivity));
     };
-  }, [handleActivity, checkAchievements, onIdle]);
+  }, [handleActivity, onAchievement, onIdle]);
 
   return (
     <div className="fixed top-4 left-4 text-white bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
