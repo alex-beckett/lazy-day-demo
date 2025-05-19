@@ -8,7 +8,7 @@ import Leaderboard from '@/components/Leaderboard';
 import AmbientEvent from '@/components/AmbientEvent';
 import MobileChillTimer from '@/components/MobileChillTimer';
 import { GameState, Achievement } from '@/types';
-import { isMobileDevice, initializeMobileSession, hasGameStarted } from '@/utils/mobile';
+import { isMobileDevice } from '@/utils/mobile';
 
 function ProTipFooter({ isMobile, showOverlay }: { isMobile: boolean; showOverlay: boolean }) {
   return (
@@ -47,9 +47,6 @@ export default function Home() {
     const checkMobile = () => {
       const mobile = isMobileDevice();
       setIsMobile(mobile);
-      if (mobile) {
-        initializeMobileSession();
-      }
     };
 
     // Check initially
@@ -220,7 +217,6 @@ export default function Home() {
                   <MobileChillTimer 
                     onClaim={handleMobileClaim} 
                     playerName={playerName}
-                    onNameChange={handleNameChange}
                   />
                 </div>
                 <div className="w-full max-w-sm">
