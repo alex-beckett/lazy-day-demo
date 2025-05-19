@@ -14,9 +14,9 @@ function ProTipFooter({ isMobile, showOverlay }: { isMobile: boolean; showOverla
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
       <p className={`text-white/90 text-sm font-light flex ${isMobile ? 'flex-col' : 'items-center'} gap-2`}>
-        {isMobile && showOverlay ? (
+        {isMobile ? (
           <>
-            The lazier way to play: Just close this page and come back later to claim your chill time! <span className="text-lg">🌴</span>
+            Close the app and come back later to accumulate time <span className="text-lg">🌴</span>
           </>
         ) : (
           <>
