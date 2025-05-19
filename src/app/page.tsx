@@ -211,9 +211,9 @@ export default function Home() {
               {/* Pro tip footer */}
               <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
                 <p className="text-white/90 text-sm font-light flex flex-col items-center gap-2">
-                  {!hasGameStarted() ? (
+                  {showOverlay ? (
                     <>
-                      Close the app and come back later to start accumulating chill time <span className="text-lg">🌴</span>
+                      The lazier way to play: Just close this page and come back later to claim your chill time! <span className="text-lg">🌴</span>
                     </>
                   ) : (
                     <>
@@ -255,9 +255,6 @@ export default function Home() {
           <div className="text-white text-center">
             <p className="text-2xl mb-4">
               Click anywhere to start
-            </p>
-            <p className="text-lg text-white/60 max-w-xs mx-auto">
-              The lazier way to play: Just close this page and come back later to claim your chill time!
             </p>
           </div>
         </div>
