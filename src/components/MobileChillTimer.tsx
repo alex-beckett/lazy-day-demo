@@ -47,10 +47,10 @@ export default function MobileChillTimer({ onClaim, playerName, onNameChange }: 
   }
 
   return (
-    <div className="text-white">
+    <div className="text-center">
       <div className="mb-6">
         <div className="flex items-center justify-center gap-3 mb-2">
-          <h1 className="text-3xl font-medium">
+          <h1 className="text-3xl font-medium text-white">
             {playerName === 'Anonymous Relaxer' ? 'Novice Napper' : playerName}
           </h1>
           <EditName 
@@ -58,7 +58,7 @@ export default function MobileChillTimer({ onClaim, playerName, onNameChange }: 
             onNameChange={onNameChange} 
           />
         </div>
-        <h2 className="text-2xl font-medium mb-2">
+        <h2 className="text-2xl font-medium mb-2 text-white">
           You've been away for {elapsedTime.formatted}
         </h2>
         <p className="text-xl text-white/80">
@@ -69,7 +69,7 @@ export default function MobileChillTimer({ onClaim, playerName, onNameChange }: 
       <div className="space-y-6">
         <button
           onClick={handleClaim}
-          className="bg-white/10 backdrop-blur-xl rounded-[20px] px-8 py-4 text-xl font-medium 
+          className="w-full bg-white/10 backdrop-blur-xl rounded-[20px] px-8 py-4 text-xl font-medium text-white
                    shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40
                    hover:bg-white/20 transition-colors duration-200"
         >
@@ -90,7 +90,7 @@ export default function MobileChillTimer({ onClaim, playerName, onNameChange }: 
                      bg-white/10 backdrop-blur-xl rounded-[20px] px-6 py-4
                      shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40"
           >
-            <p className="text-xl">
+            <p className="text-xl text-white">
               +{claimedAmount} added to your chill time! 🌴
             </p>
           </motion.div>
