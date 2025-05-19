@@ -8,7 +8,7 @@ import Leaderboard from '@/components/Leaderboard';
 import AmbientEvent from '@/components/AmbientEvent';
 import MobileChillTimer from '@/components/MobileChillTimer';
 import { GameState, Achievement } from '@/types';
-import { isMobileDevice, initializeMobileSession } from '@/utils/mobile';
+import { isMobileDevice, initializeMobileSession, hasGameStarted } from '@/utils/mobile';
 
 export default function Home() {
   const [gameState, setGameState] = useState<GameState>({
@@ -169,6 +169,10 @@ export default function Home() {
     handleIdle(newState);
   };
 
+  const hasGameStarted = () => {
+    return gameStarted;
+  };
+
   return (
     <main className="min-h-screen relative overflow-hidden">
       {/* Background video */}
@@ -207,7 +211,7 @@ export default function Home() {
               {/* Pro tip footer */}
               <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
                 <p className="text-white/90 text-sm font-light flex flex-col items-center gap-2">
-                  {!gameStarted ? (
+                  {!hasGameStarted() ? (
                     <>
                       Close the app and come back later to start accumulating chill time <span className="text-lg">🌴</span>
                     </>
