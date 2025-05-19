@@ -38,11 +38,7 @@ export default function MobileChillTimer({ onClaim }: MobileChillTimerProps) {
   if (!gameStarted) {
     return (
       <div className="text-center">
-        <div className="mb-8">
-          <h1 className="text-3xl font-medium mb-2">
-            Welcome to Lazy Day
-          </h1>
-        </div>
+        <div className="mb-8" />
       </div>
     );
   }
