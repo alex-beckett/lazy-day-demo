@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getElapsedTime, getTotalChillTime, claimChillTime, hasGameStarted } from '@/utils/mobile';
+import EditName from './EditName';
 
 interface MobileChillTimerProps {
   onClaim: (totalSeconds: number) => void;
+  playerName: string;
+  onNameChange: (newName: string) => void;
 }
 
-export default function MobileChillTimer({ onClaim }: MobileChillTimerProps) {
+export default function MobileChillTimer({ onClaim, playerName, onNameChange }: MobileChillTimerProps) {
   const [elapsedTime, setElapsedTime] = useState(getElapsedTime());
   const [totalTime, setTotalTime] = useState(getTotalChillTime());
   const [showClaimed, setShowClaimed] = useState(false);
@@ -46,9 +49,18 @@ export default function MobileChillTimer({ onClaim }: MobileChillTimerProps) {
   return (
     <div className="text-center">
       <div className="mb-8">
-        <h1 className="text-3xl font-medium mb-2">
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <h1 className="text-3xl font-medium">
+            {playerName === 'Anonymous Relaxer' ? 'Novice Napper' : playerName}
+          </h1>
+          <EditName 
+            currentName={playerName === 'Anonymous Relaxer' ? 'Novice Napper' : playerName} 
+            onNameChange={onNameChange} 
+          />
+        </div>
+        <h2 className="text-2xl font-medium mb-2">
           You've been away for {elapsedTime.formatted}
-        </h1>
+        </h2>
         <p className="text-xl text-white/80">
           That's {elapsedTime.formatted} of peak stillness
         </p>

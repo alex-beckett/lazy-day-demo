@@ -217,7 +217,11 @@ export default function Home() {
               </h1>
               <div className="mt-20 flex flex-col items-center gap-y-4 px-4">
                 <div className="w-full max-w-sm">
-                  <MobileChillTimer onClaim={handleMobileClaim} />
+                  <MobileChillTimer 
+                    onClaim={handleMobileClaim} 
+                    playerName={playerName}
+                    onNameChange={handleNameChange}
+                  />
                 </div>
                 <div className="w-full max-w-sm">
                   <Leaderboard isMobile />
