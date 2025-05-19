@@ -192,8 +192,24 @@ export default function Home() {
         <div className="relative z-10">
           {isMobile ? (
             <>
-              <MobileChillTimer onClaim={handleMobileClaim} />
-              <Leaderboard />
+              <h1 className="absolute top-4 left-1/2 -translate-x-1/2 text-3xl font-medium text-white">
+                Lazy Day Tournament
+              </h1>
+              <div className="mt-20 flex flex-col items-center gap-y-4 px-4">
+                <div className="w-full max-w-sm">
+                  <MobileChillTimer onClaim={handleMobileClaim} />
+                </div>
+                <div className="w-full max-w-sm">
+                  <Leaderboard />
+                </div>
+              </div>
+              
+              {/* Pro tip footer */}
+              <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] px-5 py-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
+                <p className="text-white/90 text-sm font-light flex items-center gap-2">
+                  Pro tip: Just relax and do nothing. You're doing great! <span className="text-lg">🌴</span>
+                </p>
+              </div>
             </>
           ) : (
             <>
@@ -226,17 +242,11 @@ export default function Home() {
         >
           <div className="text-white text-center">
             <p className="text-2xl mb-4">
-              {isMobile ? (
-                "Close the app to start chilling"
-              ) : (
-                "Click anywhere to start"
-              )}
+              Click anywhere to start
             </p>
-            {isMobile ? (
-              <p className="text-lg text-white/60 max-w-xs mx-auto">
-                The lazier way to play: Just close this page and come back later to claim your chill time!
-              </p>
-            ) : null}
+            <p className="text-lg text-white/60 max-w-xs mx-auto">
+              The lazier way to play: Just close this page and come back later to claim your chill time!
+            </p>
           </div>
         </div>
       )}

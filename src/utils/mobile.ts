@@ -7,6 +7,7 @@ interface StorageData {
     timestamp: number;
     duration: number;
   }>;
+  hasStarted: boolean;
 }
 
 const STORAGE_KEY = 'lazy-day-mobile-data';
@@ -26,10 +27,21 @@ export function initializeMobileSession(): void {
     const initialData: StorageData = {
       checkInTimestamp: Date.now(),
       totalChillTime: 0,
-      claimedSessionHistory: []
+      claimedSessionHistory: [],
+      hasStarted: false
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
   }
+}
+
+export function startMobileGame(): void {
+  const data = getMobileSessionData();
+  const newData: StorageData = {
+    ...data,
+    hasStarted: true,
+    checkInTimestamp: Date.now() // Reset timestamp when game actually starts
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
 }
 
 export function getMobileSessionData(): StorageData {
@@ -41,8 +53,22 @@ export function getMobileSessionData(): StorageData {
   return JSON.parse(data);
 }
 
+export function hasGameStarted(): boolean {
+  const { hasStarted } = getMobileSessionData();
+  return hasStarted;
+}
+
 export function getElapsedTime(): { seconds: number; formatted: string } {
-  const { checkInTimestamp } = getMobileSessionData();
+  const { checkInTimestamp, hasStarted } = getMobileSessionData();
+  
+  // If game hasn't started, return 0
+  if (!hasStarted) {
+    return {
+      seconds: 0,
+      formatted: '0m'
+    };
+  }
+  
   const elapsedSeconds = Math.floor((Date.now() - checkInTimestamp) / 1000);
   
   const hours = Math.floor(elapsedSeconds / 3600);
@@ -76,7 +102,8 @@ export function claimChillTime(): {
         timestamp: Date.now(),
         duration: elapsed.seconds
       }
-    ]
+    ],
+    hasStarted: true
   };
   
   localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));

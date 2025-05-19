@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getElapsedTime, getTotalChillTime, claimChillTime } from '@/utils/mobile';
+import { getElapsedTime, getTotalChillTime, claimChillTime, hasGameStarted } from '@/utils/mobile';
 
 interface MobileChillTimerProps {
   onClaim: (totalSeconds: number) => void;
@@ -11,6 +11,7 @@ export default function MobileChillTimer({ onClaim }: MobileChillTimerProps) {
   const [totalTime, setTotalTime] = useState(getTotalChillTime());
   const [showClaimed, setShowClaimed] = useState(false);
   const [claimedAmount, setClaimedAmount] = useState('');
+  const [gameStarted, setGameStarted] = useState(hasGameStarted());
 
   // Update elapsed time every minute
   useEffect(() => {
@@ -34,8 +35,23 @@ export default function MobileChillTimer({ onClaim }: MobileChillTimerProps) {
     }, 3000);
   };
 
+  if (!gameStarted) {
+    return (
+      <div className="text-center">
+        <div className="mb-8">
+          <h1 className="text-3xl font-medium mb-2">
+            Welcome to Lazy Day
+          </h1>
+          <p className="text-xl text-white/80">
+            Close the app and come back later to start accumulating chill time
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 text-center">
+    <div className="text-center">
       <div className="mb-8">
         <h1 className="text-3xl font-medium mb-2">
           You've been away for {elapsedTime.formatted}
