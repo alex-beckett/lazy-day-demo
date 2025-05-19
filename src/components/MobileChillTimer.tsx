@@ -47,8 +47,8 @@ export default function MobileChillTimer({ onClaim, playerName, onNameChange }: 
   }
 
   return (
-    <div className="text-center">
-      <div className="mb-8">
+    <div className="text-white">
+      <div className="mb-6">
         <div className="flex items-center justify-center gap-3 mb-2">
           <h1 className="text-3xl font-medium">
             {playerName === 'Anonymous Relaxer' ? 'Novice Napper' : playerName}
