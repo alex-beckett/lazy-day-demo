@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Achievement, GameState } from '@/types';
 import EditName from './EditName';
+import { useTournamentTimer } from '@/utils/tournament';
 
 export const ACHIEVEMENTS: Achievement[] = [
   { title: 'Intern of Inactivity', threshold: 300, description: '5 minutes of pure nothing' },
@@ -60,11 +61,15 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
     isIdle: false
   });
 
+  const { tournamentState } = useTournamentTimer();
+  const isTournamentActive = tournamentState === 'in_progress';
+
   // Track last activity time and idle status in refs
   const lastActivityRef = useRef(Date.now());
   const isIdleRef = useRef(false);
   const timerRef = useRef<NodeJS.Timeout>();
   const lastUpdateRef = useRef(Date.now());
+  const finalScoreRef = useRef(initialIdleTime);
 
   // Update state when initialIdleTime changes (from caught events or mobile claims)
   useEffect(() => {
@@ -84,6 +89,9 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
 
   // Handle activity detection
   const handleActivity = useCallback(() => {
+    // Don't track activity if tournament is over
+    if (tournamentState === 'completed') return;
+
     const now = Date.now();
     // Only consider it as activity if more than 100ms has passed since last activity
     // This prevents micro-movements from resetting the timer
@@ -93,11 +101,23 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
       isIdleRef.current = false;
       setState(prev => ({ ...prev, isIdle: false }));
     }
-  }, []);
+  }, [tournamentState]);
 
   // Set up the timer
   useEffect(() => {
     function checkIdleState() {
+      // If tournament is over, use the final score
+      if (tournamentState === 'completed') {
+        if (state.idleTime !== finalScoreRef.current) {
+          setState(prev => ({ 
+            ...prev, 
+            idleTime: finalScoreRef.current,
+            isIdle: false 
+          }));
+        }
+        return;
+      }
+
       const now = Date.now();
       const timeSinceActivity = now - lastActivityRef.current;
       
@@ -113,8 +133,8 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
         setState(prev => ({ ...prev, isIdle: isNowIdle }));
       }
 
-      // Only increment time if we're idle
-      if (isNowIdle) {
+      // Only increment time if we're idle and tournament is active
+      if (isNowIdle && isTournamentActive) {
         const timeSinceLastUpdate = now - lastUpdateRef.current;
         if (timeSinceLastUpdate >= 1000) {
           const secondsToAdd = Math.floor(timeSinceLastUpdate / 1000);
@@ -123,6 +143,9 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
           setState(prev => {
             const newTime = prev.idleTime + secondsToAdd;
             const { newAchievements, highestTitle } = checkAchievements(newTime, prev.achievements);
+
+            // Store the final score when tournament is active
+            finalScoreRef.current = newTime;
 
             onIdle({
               idleTime: newTime,
@@ -159,10 +182,10 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
       }
       events.forEach(event => window.removeEventListener(event, handleActivity));
     };
-  }, [handleActivity, onAchievement, onIdle]);
+  }, [handleActivity, onAchievement, onIdle, tournamentState, isTournamentActive]);
 
   return (
-    <div className={`fixed top-4 left-4 text-white bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ${state.isIdle ? 'ring-green-400/40' : 'ring-white/40'} transition-colors duration-300`}>
+    <div className={`fixed top-4 left-4 text-white bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ${state.isIdle && isTournamentActive ? 'ring-green-400/40' : 'ring-white/40'} transition-colors duration-300`}>
       <div className="flex items-center gap-3 mb-3 relative">
         <h2 className="text-2xl font-medium tracking-tight">{playerName === 'Anonymous Relaxer' ? state.currentTitle : playerName}</h2>
         <EditName currentName={playerName === 'Anonymous Relaxer' ? state.currentTitle : playerName} onNameChange={onNameChange} />
@@ -172,7 +195,7 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
           Time doing nothing: {Math.floor(state.idleTime / 60)}m {state.idleTime % 60}s
         </p>
         <p className="text-sm font-light opacity-70">
-          Status: {state.isIdle ? '😴 Chilling...' : '👀 Active'}
+          Status: {tournamentState === 'completed' ? '🏁 Tournament Complete' : state.isIdle ? '😴 Chilling...' : '👀 Active'}
         </p>
       </div>
     </div>
