@@ -8,6 +8,8 @@ import Leaderboard from '@/components/Leaderboard';
 import AmbientEvent from '@/components/AmbientEvent';
 import { GameState, Achievement } from '@/types';
 import { isMobileDevice } from '@/utils/mobile';
+import TournamentTimer from '@/components/TournamentTimer';
+import { useTournamentTimer } from '@/utils/tournament';
 
 function ProTipFooter({ isMobile, showOverlay }: { isMobile: boolean; showOverlay: boolean }) {
   return (
@@ -33,6 +35,8 @@ export default function Home() {
     lastEventTime: Date.now(),
     bonusMultiplier: 1,
   });
+
+  const { isActive: isTournamentActive } = useTournamentTimer();
 
   const [sessionId, setSessionId] = useState<string>('');
   const [showOverlay, setShowOverlay] = useState(true);
@@ -113,6 +117,7 @@ export default function Home() {
   const handleIdle = async (newState: GameState) => {
     if (!gameStarted) return;
     
+    // Always update local state
     setGameState(prev => ({
       ...prev,
       idleTime: newState.idleTime,
@@ -120,7 +125,8 @@ export default function Home() {
       achievements: newState.achievements
     }));
     
-    if (sessionId && newState.idleTime > 0 && newState.idleTime % 5 === 0) {
+    // Only update leaderboard if tournament is active
+    if (isTournamentActive && sessionId && newState.idleTime > 0 && newState.idleTime % 5 === 0) {
       try {
         await setDoc(doc(db, 'leaderboard', sessionId), {
           idleTime: newState.idleTime,
@@ -148,13 +154,15 @@ export default function Home() {
     
     const newIdleTime = gameState.idleTime + bonus;
     
+    // Always update local state
     setGameState(prev => ({
       ...prev,
       idleTime: newIdleTime,
       lastEventTime: Date.now()
     }));
 
-    if (sessionId) {
+    // Only update leaderboard if tournament is active
+    if (isTournamentActive && sessionId) {
       try {
         setDoc(doc(db, 'leaderboard', sessionId), {
           idleTime: newIdleTime,
@@ -170,6 +178,8 @@ export default function Home() {
   };
 
   const handleMobileClaim = async (totalSeconds: number) => {
+    if (!isTournamentActive) return;
+    
     // Update game state and leaderboard with claimed time
     const newState = {
       idleTime: totalSeconds,
@@ -210,9 +220,12 @@ export default function Home() {
         <div className="relative z-10">
           {isMobile ? (
             <>
-              <h1 className="absolute top-4 left-1/2 -translate-x-1/2 text-3xl font-medium text-white text-center w-full">
-                Lazy Day Tournament
-              </h1>
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full text-center">
+                <h1 className="text-3xl font-medium text-white">
+                  Lazy Day Tournament
+                </h1>
+                <TournamentTimer />
+              </div>
               <div className="flex flex-col items-center w-full pt-24 px-4">
                 <div className="w-full max-w-sm bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
                   <Leaderboard isMobile />
@@ -223,9 +236,12 @@ export default function Home() {
             </>
           ) : (
             <>
-              <h1 className="absolute top-4 left-1/2 -translate-x-1/2 text-3xl font-medium text-white text-center w-full">
-                Lazy Day Tournament
-              </h1>
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full text-center">
+                <h1 className="text-3xl font-medium text-white">
+                  Lazy Day Tournament
+                </h1>
+                <TournamentTimer />
+              </div>
               <IdleTimer 
                 onIdle={handleIdle} 
                 onAchievement={handleAchievement}

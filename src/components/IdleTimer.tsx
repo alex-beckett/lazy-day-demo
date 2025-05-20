@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Achievement, GameState } from '@/types';
 import EditName from './EditName';
 
@@ -57,8 +57,14 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
     idleTime: initialIdleTime,
     currentTitle: 'Novice Napper',
     achievements: [] as Achievement[],
-    lastActivity: Date.now()
+    isIdle: false
   });
+
+  // Track last activity time and idle status in refs
+  const lastActivityRef = useRef(Date.now());
+  const isIdleRef = useRef(false);
+  const timerRef = useRef<NodeJS.Timeout>();
+  const lastUpdateRef = useRef(Date.now());
 
   // Update state when initialIdleTime changes (from caught events or mobile claims)
   useEffect(() => {
@@ -72,73 +78,103 @@ export default function IdleTimer({ onIdle, onAchievement, initialIdleTime = 0, 
         achievements: [...prev.achievements, ...newAchievements]
       }));
 
-      // Trigger achievement notifications
       newAchievements.forEach(achievement => onAchievement(achievement));
     }
   }, [initialIdleTime, onAchievement, state.achievements, state.idleTime]);
 
   // Handle activity detection
   const handleActivity = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      lastActivity: Date.now()
-    }));
+    const now = Date.now();
+    // Only consider it as activity if more than 100ms has passed since last activity
+    // This prevents micro-movements from resetting the timer
+    if (now - lastActivityRef.current > 100) {
+      lastActivityRef.current = now;
+      lastUpdateRef.current = now; // Reset the update timer when activity is detected
+      isIdleRef.current = false;
+      setState(prev => ({ ...prev, isIdle: false }));
+    }
   }, []);
 
   // Set up the timer
   useEffect(() => {
-    const timer = setInterval(() => {
-      setState(prev => {
-        const now = Date.now();
-        const timeSinceActivity = now - prev.lastActivity;
-        
-        // Only increment if we've been idle
-        if (timeSinceActivity >= 1000) {
-          const newTime = prev.idleTime + 1;
-          const { newAchievements, highestTitle } = checkAchievements(newTime, prev.achievements);
-          
-          // Notify parent
-          onIdle({
-            idleTime: newTime,
-            currentTitle: highestTitle,
-            achievements: [...prev.achievements, ...newAchievements],
-            lastEventTime: now,
-            bonusMultiplier: 1,
-          });
-          
-          // Trigger achievement notifications
-          newAchievements.forEach(achievement => onAchievement(achievement));
-          
-          return {
-            ...prev,
-            idleTime: newTime,
-            currentTitle: highestTitle,
-            achievements: [...prev.achievements, ...newAchievements]
-          };
+    function checkIdleState() {
+      const now = Date.now();
+      const timeSinceActivity = now - lastActivityRef.current;
+      
+      // Consider idle after 2 seconds of no activity
+      const isNowIdle = timeSinceActivity >= 2000;
+      
+      if (isNowIdle !== isIdleRef.current) {
+        isIdleRef.current = isNowIdle;
+        if (isNowIdle) {
+          // When becoming idle, set the lastUpdateRef to now
+          lastUpdateRef.current = now;
         }
-        return prev;
-      });
-    }, 1000);
+        setState(prev => ({ ...prev, isIdle: isNowIdle }));
+      }
 
-    // Set up activity listeners
-    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+      // Only increment time if we're idle
+      if (isNowIdle) {
+        const timeSinceLastUpdate = now - lastUpdateRef.current;
+        if (timeSinceLastUpdate >= 1000) {
+          const secondsToAdd = Math.floor(timeSinceLastUpdate / 1000);
+          lastUpdateRef.current = now - (timeSinceLastUpdate % 1000);
+
+          setState(prev => {
+            const newTime = prev.idleTime + secondsToAdd;
+            const { newAchievements, highestTitle } = checkAchievements(newTime, prev.achievements);
+
+            onIdle({
+              idleTime: newTime,
+              currentTitle: highestTitle,
+              achievements: [...prev.achievements, ...newAchievements],
+              lastEventTime: now,
+              bonusMultiplier: 1,
+            });
+
+            newAchievements.forEach(achievement => onAchievement(achievement));
+
+            return {
+              ...prev,
+              idleTime: newTime,
+              currentTitle: highestTitle,
+              achievements: [...prev.achievements, ...newAchievements],
+              isIdle: true
+            };
+          });
+        }
+      }
+    }
+
+    // Run the check more frequently for better responsiveness
+    timerRef.current = setInterval(checkIdleState, 100);
+
+    // Only track mouse movement events
+    const events = ['mousemove'];
     events.forEach(event => window.addEventListener(event, handleActivity));
 
     return () => {
-      clearInterval(timer);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
       events.forEach(event => window.removeEventListener(event, handleActivity));
     };
   }, [handleActivity, onAchievement, onIdle]);
 
   return (
-    <div className="fixed top-4 left-4 text-white bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
+    <div className={`fixed top-4 left-4 text-white bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ${state.isIdle ? 'ring-green-400/40' : 'ring-white/40'} transition-colors duration-300`}>
       <div className="flex items-center gap-3 mb-3 relative">
         <h2 className="text-2xl font-medium tracking-tight">{playerName === 'Anonymous Relaxer' ? state.currentTitle : playerName}</h2>
         <EditName currentName={playerName === 'Anonymous Relaxer' ? state.currentTitle : playerName} onNameChange={onNameChange} />
       </div>
-      <p className="text-lg font-light opacity-90">
-        Time doing nothing: {Math.floor(state.idleTime / 60)}m {state.idleTime % 60}s
-      </p>
+      <div className="space-y-1">
+        <p className="text-lg font-light opacity-90">
+          Time doing nothing: {Math.floor(state.idleTime / 60)}m {state.idleTime % 60}s
+        </p>
+        <p className="text-sm font-light opacity-70">
+          Status: {state.isIdle ? '😴 Chilling...' : '👀 Active'}
+        </p>
+      </div>
     </div>
   );
 } 
