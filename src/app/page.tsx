@@ -223,6 +223,9 @@ export default function Home() {
             </>
           ) : (
             <>
+              <h1 className="absolute top-4 left-1/2 -translate-x-1/2 text-3xl font-medium text-white text-center w-full">
+                Lazy Day Tournament
+              </h1>
               <IdleTimer 
                 onIdle={handleIdle} 
                 onAchievement={handleAchievement}
