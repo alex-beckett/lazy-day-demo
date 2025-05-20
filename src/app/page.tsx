@@ -6,7 +6,6 @@ import { db } from '@/lib/firebase';
 import IdleTimer, { ACHIEVEMENTS } from '@/components/IdleTimer';
 import Leaderboard from '@/components/Leaderboard';
 import AmbientEvent from '@/components/AmbientEvent';
-import MobileChillTimer from '@/components/MobileChillTimer';
 import { GameState, Achievement } from '@/types';
 import { isMobileDevice } from '@/utils/mobile';
 
@@ -213,9 +212,6 @@ export default function Home() {
                 Lazy Day Tournament
               </h1>
               <div className="flex flex-col items-center w-full pt-20 px-4">
-                <div className="w-full max-w-sm bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40 mb-4">
-                  <MobileChillTimer />
-                </div>
                 <div className="w-full max-w-sm">
                   <Leaderboard isMobile />
                 </div>
