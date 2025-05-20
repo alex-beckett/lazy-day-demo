@@ -222,10 +222,12 @@ export default function Home() {
             <div className="min-h-[100dvh] flex flex-col items-center px-4">
               {/* Title and Tournament Timer */}
               <div className="w-full text-center pt-safe">
-                <h1 className="text-3xl font-medium text-white">
-                  Lazy Day Tournament
-                </h1>
-                <TournamentTimer />
+                <div className="pt-6">
+                  <h1 className="text-3xl font-medium text-white">
+                    Lazy Day Tournament
+                  </h1>
+                  <TournamentTimer />
+                </div>
               </div>
 
               {/* Leaderboard */}
@@ -234,8 +236,10 @@ export default function Home() {
               </div>
 
               {/* Pro Tip Footer - Adjusted position */}
-              <div className="mt-auto pb-safe w-full">
-                <ProTipFooter isMobile={true} showOverlay={showOverlay} />
+              <div className="mt-auto pb-safe">
+                <div className="pb-6 w-full">
+                  <ProTipFooter isMobile={true} showOverlay={showOverlay} />
+                </div>
               </div>
             </div>
           ) : (
