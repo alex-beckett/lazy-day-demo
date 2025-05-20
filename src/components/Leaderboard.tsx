@@ -79,7 +79,9 @@ export default function Leaderboard({ isMobile = false }: LeaderboardProps) {
           </div>
         ))}
         {entries.length === 0 && (
-          <p className="text-center text-white/50 font-light">Starting to chill...</p>
+          <p className="text-center text-white/50 font-light">
+            {isMobile ? "Loading desktop leaderboard" : "Starting to chill..."}
+          </p>
         )}
       </div>
     </div>

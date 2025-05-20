@@ -210,7 +210,7 @@ export default function Home() {
         <div className="relative z-10">
           {isMobile ? (
             <>
-              <h1 className="absolute top-4 left-1/2 -translate-x-1/2 text-3xl font-medium text-white">
+              <h1 className="absolute top-4 left-1/2 -translate-x-1/2 text-3xl font-medium text-white text-center w-full">
                 Lazy Day Tournament
               </h1>
               <div className="flex flex-col items-center w-full pt-20 px-4">
