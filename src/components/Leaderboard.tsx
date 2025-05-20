@@ -47,7 +47,7 @@ export default function Leaderboard({ isMobile = false }: LeaderboardProps) {
   // Filter entries for mobile display
   const displayEntries = isMobile ? entries.slice(0, 3) : entries;
 
-  const baseClasses = "bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40";
+  const baseClasses = isMobile ? "" : "bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40";
   const positionClasses = isMobile ? "w-full" : "fixed top-4 right-4 w-72";
 
   return (
