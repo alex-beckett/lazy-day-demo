@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 
 // Tournament configuration
+// Set to false for production deployment
+export const USE_TEST_WINDOW = true;
 export const TOURNAMENT_START = new Date("2025-05-22T16:00:00Z"); // 9:00 AM PST
 export const TOURNAMENT_END = new Date("2025-05-23T16:00:00Z");   // 9:00 AM PST next day
-export const USE_TEST_WINDOW = true;
 export const TEST_START = new Date();
 export const TEST_END = new Date(Date.now() + 5 * 60 * 1000);
 
