@@ -10,7 +10,7 @@ interface LeaderboardProps {
 
 export default function Leaderboard({ isMobile = false }: LeaderboardProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [showConnecting, setShowConnecting] = useState(true);
+  const [showConnecting, setShowConnecting] = useState(!isMobile);
 
   useEffect(() => {
     // Query the top 10 entries by idle time
@@ -31,16 +31,18 @@ export default function Leaderboard({ isMobile = false }: LeaderboardProps) {
       desktopEntries.sort((a, b) => b.idleTime - a.idleTime);
       setEntries(desktopEntries);
       
-      // Hide the connecting text after 5 seconds
-      setTimeout(() => {
-        setShowConnecting(false);
-      }, 5000);
+      // Hide the connecting text after 5 seconds (desktop only)
+      if (!isMobile) {
+        setTimeout(() => {
+          setShowConnecting(false);
+        }, 5000);
+      }
     }, (error) => {
       console.error("Error fetching leaderboard:", error);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isMobile]);
 
   // Filter entries for mobile display
   const displayEntries = isMobile ? entries.slice(0, 3) : entries;
@@ -55,7 +57,7 @@ export default function Leaderboard({ isMobile = false }: LeaderboardProps) {
         <h2 className="text-xl font-medium tracking-tight text-white">
           {isMobile ? "Top 3 Chillers (Desktop)" : "Top Chillers"}
         </h2>
-        {showConnecting && entries.length === 0 && (
+        {!isMobile && showConnecting && entries.length === 0 && (
           <span className="text-xs text-white/60">(Connecting...)</span>
         )}
       </div>
