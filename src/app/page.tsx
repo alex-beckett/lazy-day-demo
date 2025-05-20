@@ -13,7 +13,7 @@ import { useTournamentTimer } from '@/utils/tournament';
 
 function ProTipFooter({ isMobile, showOverlay }: { isMobile: boolean; showOverlay: boolean }) {
   return (
-    <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl rounded-[20px] ${isMobile ? 'w-[90%] px-4 py-2' : 'px-5 py-3.5'} shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40`}>
+    <div className={`${isMobile ? 'w-full' : 'fixed bottom-4 left-1/2 -translate-x-1/2'} bg-white/10 backdrop-blur-xl rounded-[20px] ${isMobile ? 'px-4 py-2' : 'px-5 py-3.5'} shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40`}>
       <p className={`text-white/90 text-sm font-light flex items-center justify-center gap-1.5`}>
         {isMobile ? (
           'Load up the game on desktop to compete'
@@ -219,21 +219,25 @@ export default function Home() {
       {!showOverlay && (
         <div className="relative z-10">
           {isMobile ? (
-            <>
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full text-center">
+            <div className="min-h-screen flex flex-col items-center px-4">
+              {/* Title and Tournament Timer */}
+              <div className="w-full text-center mt-8 mb-4">
                 <h1 className="text-3xl font-medium text-white">
                   Lazy Day Tournament
                 </h1>
                 <TournamentTimer />
               </div>
-              <div className="flex flex-col items-center w-full pt-24 px-4">
-                <div className="w-full max-w-sm bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40">
-                  <Leaderboard isMobile />
-                </div>
+
+              {/* Leaderboard */}
+              <div className="w-full max-w-sm bg-white/10 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-inset ring-white/40 mt-4">
+                <Leaderboard isMobile />
               </div>
-              
-              <ProTipFooter isMobile={true} showOverlay={showOverlay} />
-            </>
+
+              {/* Pro Tip Footer - Adjusted position */}
+              <div className="mt-auto mb-4 w-full">
+                <ProTipFooter isMobile={true} showOverlay={showOverlay} />
+              </div>
+            </div>
           ) : (
             <>
               <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full text-center">
