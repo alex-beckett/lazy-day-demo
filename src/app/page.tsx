@@ -219,9 +219,9 @@ export default function Home() {
       {!showOverlay && (
         <div className="relative z-10">
           {isMobile ? (
-            <div className="min-h-screen flex flex-col items-center px-4">
+            <div className="min-h-screen flex flex-col items-center px-4 pt-safe">
               {/* Title and Tournament Timer */}
-              <div className="w-full text-center mt-8 mb-4">
+              <div className="w-full text-center mt-4">
                 <h1 className="text-3xl font-medium text-white">
                   Lazy Day Tournament
                 </h1>
@@ -234,7 +234,7 @@ export default function Home() {
               </div>
 
               {/* Pro Tip Footer - Adjusted position */}
-              <div className="mt-auto mb-4 w-full">
+              <div className="mt-auto mb-safe w-full">
                 <ProTipFooter isMobile={true} showOverlay={showOverlay} />
               </div>
             </div>
