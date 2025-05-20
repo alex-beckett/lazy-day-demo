@@ -127,6 +127,7 @@ export default function Home() {
           title: newState.currentTitle,
           timestamp: Date.now(),
           playerName: playerName,
+          isDesktop: !isMobile
         });
       } catch (error) {
         console.error('Error updating leaderboard:', error);
@@ -160,6 +161,7 @@ export default function Home() {
           title: gameState.currentTitle,
           timestamp: Date.now(),
           playerName: playerName,
+          isDesktop: !isMobile
         });
       } catch (error) {
         console.error('Error updating leaderboard:', error);

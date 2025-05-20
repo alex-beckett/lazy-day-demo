@@ -4,6 +4,7 @@ export interface LeaderboardEntry {
   title: string;
   timestamp: number;
   playerName: string;
+  isDesktop: boolean;
 }
 
 export interface Achievement {

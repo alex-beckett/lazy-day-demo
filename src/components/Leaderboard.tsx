@@ -13,7 +13,7 @@ export default function Leaderboard({ isMobile = false }: LeaderboardProps) {
   const [showConnecting, setShowConnecting] = useState(true);
 
   useEffect(() => {
-    // Query the top 10 entries by idle time (we'll filter for mobile display in the render)
+    // Query the top 10 entries by idle time
     const q = query(
       collection(db, 'leaderboard'),
       orderBy('idleTime', 'desc'),
@@ -26,9 +26,10 @@ export default function Leaderboard({ isMobile = false }: LeaderboardProps) {
         ...doc.data()
       } as LeaderboardEntry));
       
-      // Sort by idle time in descending order
-      newEntries.sort((a, b) => b.idleTime - a.idleTime);
-      setEntries(newEntries);
+      // Filter for desktop players and sort by idle time
+      const desktopEntries = newEntries.filter(entry => entry.isDesktop);
+      desktopEntries.sort((a, b) => b.idleTime - a.idleTime);
+      setEntries(desktopEntries);
       
       // Hide the connecting text after 5 seconds
       setTimeout(() => {
@@ -52,7 +53,7 @@ export default function Leaderboard({ isMobile = false }: LeaderboardProps) {
       <div className="flex items-center gap-2 mb-4">
         <TrophyIcon className="w-5 h-5 text-[#FF9500]" />
         <h2 className="text-xl font-medium tracking-tight text-white">
-          {isMobile ? "Top 3 Chillers" : "Top Chillers"}
+          {isMobile ? "Top 3 Chillers (Desktop)" : "Top Chillers"}
         </h2>
         {showConnecting && entries.length === 0 && (
           <span className="text-xs text-white/60">(Connecting...)</span>
